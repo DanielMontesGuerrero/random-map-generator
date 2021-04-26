@@ -185,4 +185,10 @@ public class Generator : MonoBehaviour
         Debug.Log("Clearing the map...");
         tilemap.ClearAllTiles();
     }
+
+    public void GenerateAllRuleTiles()
+    {
+        Debug.Log("Generating Rule Tile");
+        RuleTileGenerator.CreateAllRuleTiles();
+    }
 }
