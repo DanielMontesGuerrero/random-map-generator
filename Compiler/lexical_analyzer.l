@@ -52,7 +52,7 @@ SUFFIX (u|U|L|l)*
 ">=" { printf(">="); }
 "<=" { printf("<="); }
 "&&" { printf("&&"); }
-"!" { printf("!"); }
+"!"  { printf("!"); }
 "!=" { printf("!="); }
 "||" { printf("||"); }
 ";"  { printf(";"); }
