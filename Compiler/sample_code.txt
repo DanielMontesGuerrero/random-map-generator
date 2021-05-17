@@ -1,30 +1,56 @@
-tileset montania_nevada = {
-	tile = {
-		name =  "pasto";
-		path = "./pasto.png";
+smarttile tile_montania {
+	tile tierra : default {
+		/*
+			opcion 1:
+				tileset = "nombre_tileset";
+				name = "nombre del subtile";
+			opcion 2:
+				name = "nombre tile";
+			opcion 3:
+				name = "";
+		*/
+		tileset = "Mountain/Tileset";
+		name = "ground_middle";
 	};
-	tile = {
-		name = "esquina";
-		path = "./corner.png";
+	tile pasto {
+		tileset = "Mountain/Tileset"
+		name = "grass";
+		/*
+		-1 no tienen vecino
+		0 
+		1 tiene vecino
+		*/
+		rule = {
+			{0, -1, 0},
+			{0, self, 0},
+			{0, 0, 0}
+		}
 	};
-
 }
 
-section montania : PerlinNoise {
+section montania : RandomWalk {
 	smoothed = 0.27;
-	tileset = "montania nevada"
+	seed = 54135.3541;
+	tile = tile_montania;
 }
 
-section cueva = {
+section cueva : DirectionalTunnel {
 	seed = 3.14159265;
-	tileset = "cueva oscura";
 }
+
+set size = {1000L, 100};
 
 begin
-	montania A(100ll, 100);
-	cueva B(100, 100) ;
 	container sections[10];
-	for(int i = 0; i < 10; i++){
+	for (int i = 0; i < 10; i++) {
+		if (i % 2) {
+			sections[i] = montania(100, 100);
+		}
+		else {
+			sections[i] = cueva(100, 100);
+		}
+	}
+	for (int i = 0; i < 10; i++) {
 		if(i < 9){
 			sections[i] join sections[i + 1];
 		}

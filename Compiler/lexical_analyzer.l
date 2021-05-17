@@ -1,5 +1,6 @@
 %{
 	#include<stdio.h>
+	#include"syntactic_analyzer.tab.h"
 %}
 
 DIGIT [0-9]
@@ -9,70 +10,62 @@ SUFFIX (u|U|L|l)*
 %%
 
  /* reserved words */
-"set"       { printf("<set>"); }
-"tileset"   { printf("<tilset>"); }
-"tile"      { printf("<tile>"); }
-"section"   { printf("<section>"); }
-"begin"     { printf("<begin>"); }
-"end"       { printf("<end>"); }
-"new"       { printf("<new>"); }
-"join"      { printf("<join>"); }
-"for"       { printf("<for>"); }
-"while"     { printf("<while>"); }
-"if"        { printf("<if>"); }
-"container" { printf("<container>"); }
-"int"       { printf("<int>"); }
-"char"      { printf("<char>"); }
-"string"    { printf("<string>"); }
-"float"     { printf("<float>"); }
-"bool"      { printf("<bool>"); }
-"double"    { printf("<double>"); }
-"long"      { printf("<long>"); }
+"set"        { return SET; }
+"smarttile"  { return SMARTTILE; }
+"tile"       { return TILE; }
+"section"    { return SECTION; }
+"begin"      { return _BEGIN; }
+"end"        { return END; }
+"new"        { return NEW; }
+"join"       { return JOIN; }
+"for"        { return FOR; }
+"while"      { return WHILE; }
+"if"         { return IF; }
+"container"  { return CONTAINER; }
+"int"        { return INT; }
+"char"       { return CHAR; }
+"string"     { return STRING; }
+"float"      { return FLOAT; }
+"bool"       { return BOOL; }
+"double"     { return DOUBLE; }
+"long"       { return LONG; }
 
  /* constans */
-"true"                             { printf("true"); }
-"false"                            { printf("false"); }
-{DIGIT}+L                          { printf("<const_long>"); }
-{DIGIT}+                           { printf("<const_integer>"); }
-{DIGIT}+"."{DIGIT}+D?              { printf("<const_double>"); }
-{DIGIT}+"."{DIGIT}+F               { printf("<const_float>"); }
-{LETTER}({LETTER}|{DIGIT}|[_\-$])* { printf("<identifier>"); }
-"'"(\\.|[^\\'])"'"                 { printf("<const_char>"); }
-\"(\\.|[^\\"])*\"                  { printf("<const_string>"); }
+"true"|"false"                     { return CONST_BOOL; }
+{DIGIT}+L                          { return CONST_LONG; }
+{DIGIT}+                           { return CONST_INT; }
+{DIGIT}+"."{DIGIT}+D?              { return CONST_DOUBLE; }
+{DIGIT}+"."{DIGIT}+F               { return CONST_FLOAT; }
+{LETTER}({LETTER}|{DIGIT}|[_\-$])* { return IDENTIFIER; }
+"'"(\\.|[^\\'])"'"                 { return CONST_STRING; }
+\"(\\.|[^\\"])*\"                  { return CONST_CHAR; }
 
  /* operators */
-"+"  { printf("+"); }
-"*"  { printf("*"); }
-"/"  { printf("/"); }
-"-"  { printf("-"); }
-"%"  { printf("%%"); }
-"="  { printf("="); }
-"<"  { printf("<"); }
-">"  { printf(">"); }
-">=" { printf(">="); }
-"<=" { printf("<="); }
-"&&" { printf("&&"); }
-"!"  { printf("!"); }
-"!=" { printf("!="); }
-"||" { printf("||"); }
-";"  { printf(";"); }
-","  { printf(","); }
-"("  { printf("("); }
-")"  { printf(")"); }
-"{"  { printf("{"); }
-"}"  { printf("}"); }
-"["  { printf("["); }
-"]"  { printf("]"); }
-":"  { printf(":"); }
+"+"  { return '+'; }
+"*"  { return '*'; }
+"/"  { return '/'; }
+"-"  { return '-'; }
+"%"  { return '%'; }
+"="  { return '='; }
+"<"  { return '<'; }
+">"  { return '>'; }
+">=" { return GREATER_EQ; }
+"<=" { return LESS_EQ; }
+"&&" { return AND_OP; }
+"!"  { return '!'; }
+"!=" { return NEQ; }
+"||" { return OR_OP; }
+";"  { return ';'; }
+","  { return ','; }
+"("  { return '('; }
+")"  { return ')'; }
+"{"  { return '{'; }
+"}"  { return '}'; }
+"["  { return '['; }
+"]"  { return ']'; }
+":"  { return ':'; }
+
+.
 
 %%
 
-int main(int argc, char **argv){
-	++argv;
-	argc--;
-	if (argc > 0)
-		yyin = fopen(argv[0], "r");
-	else
-		yyin = stdin;
-	yylex();
-}
