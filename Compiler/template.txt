@@ -1,0 +1,58 @@
+smarttile tile_montania {
+	tile tierra : default {
+		/*
+			opcion 1:
+				tileset = "nombre_tileset";
+				name = "nombre del subtile";
+			opcion 2:
+				name = "nombre tile";
+			opcion 3:
+				name = "";
+		*/
+		tileset = "Mountain/Tileset";
+		name = "ground_middle";
+	};
+	tile pasto {
+		tileset = "Mountain/Tileset"
+		name = "grass";
+		/*
+		-1 no tienen vecino
+		0 
+		1 tiene vecino
+		*/
+		rule = {
+			{0, -1, 0},
+			{0, self, 0},
+			{0, 0, 0}
+		}
+	};
+}
+
+section montania : RandomWalk {
+	smoothed = 0.27;
+	seed = 54135.3541;
+	tile = tile_montania;
+}
+
+section cueva : DirectionalTunnel {
+	seed = 3.14159265;
+}
+
+set size = {1000L, 100};
+
+begin
+	container sections[10];
+	for (int i = 0; i < 10; i++) {
+		if (i % 2) {
+			sections[i] = montania(100, 100);
+		}
+		else {
+			sections[i] = cueva(100, 100);
+		}
+	}
+	for (int i = 0; i < 10; i++) {
+		if(i < 9){
+			sections[i] join sections[i + 1];
+		}
+	}
+end

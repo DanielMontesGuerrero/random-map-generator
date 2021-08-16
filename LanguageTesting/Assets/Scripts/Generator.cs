@@ -140,7 +140,7 @@ public class Generator : MonoBehaviour
                 {
                     maxPathChange = Random.Range(0, 100);
                 }
-                Algorithms.DirectionalTunnel(map, minPathWidth, maxPathWidth, maxPathChange, roughness, curvyness);
+                Algorithms.DirectionalTunnel(map, seed, minPathWidth, maxPathWidth, maxPathChange, roughness, curvyness);
                 break;
             case Algorithm.CellularAutomata:
                 if (useRandomFillPercent)

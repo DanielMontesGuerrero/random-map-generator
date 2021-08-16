@@ -6,7 +6,7 @@ using System.Linq;
 public class RuleTileGenerator
 {
 
-	private const string RULE_TILES_PATH = "Assets/Tiles/RuleTiles/";
+	public const string RULE_TILES_PATH = "Tiles/RuleTiles/";
 
 	public static void CreateAllRuleTiles()
 	{
@@ -29,11 +29,11 @@ public class RuleTileGenerator
 	}
 
 	/// Creates a RuleTile
-	private static RuleTile CreateRuleTile(string name, List<Rule> rules)
+	public static RuleTile CreateRuleTile(string name, List<Rule> rules)
 	{
 		RuleTile ruleTile = ScriptableObject.CreateInstance("RuleTile") as RuleTile;
 
-		AssetDatabase.CreateAsset(ruleTile, RULE_TILES_PATH + name + ".asset");
+		AssetDatabase.CreateAsset(ruleTile, "Assets/Resources/" + RULE_TILES_PATH + name + ".asset");
 
 		for (int i = 0; i < rules.Count; i++)
 		{

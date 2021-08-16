@@ -91,9 +91,9 @@ public class Algorithms : MonoBehaviour
                 //Determine the current height
                 float currHeight = lastPos.y;
                 //Work our way through from the last x to the current x
-                for (int x = lastPos.x; x < currentPos.x; x++)
+                for (int x = lastPos.x; x <= currentPos.x; x++)
                 {
-                    for (int y = Mathf.FloorToInt(currHeight); y > 0; y--)
+                    for (int y = Mathf.FloorToInt(currHeight); y >= 0; y--)
                     {
                         map[x, y] = 1;
                     }
@@ -114,7 +114,7 @@ public class Algorithms : MonoBehaviour
         //Seed our random
         System.Random rand = new System.Random(seed.GetHashCode()); 
         //Set our starting height
-        int lastHeight = Random.Range(0, map.GetUpperBound(1));
+        int lastHeight = rand.Next(0, map.GetUpperBound(1));
         //Cycle through our width
         for (int x = 0; x <= map.GetUpperBound(0); x++) 
         {
@@ -145,7 +145,7 @@ public class Algorithms : MonoBehaviour
         //Seed our random
         System.Random rand = new System.Random(seed.GetHashCode());
         //Determine the start position
-        int lastHeight = Random.Range(0, map.GetUpperBound(1));
+        int lastHeight = rand.Next(0, map.GetUpperBound(1));
         //Used to determine which direction to go
         int nextMove = 0;
         //Used to keep track of the current sections width
@@ -180,6 +180,7 @@ public class Algorithms : MonoBehaviour
 
     public static int[,] PerlinNoiseCave(int[,] map, float modifier, bool edgesAreWalls)
     {
+        // modifier is equivalent to seed
         int newPoint;
         for (int x = 0; x < map.GetUpperBound(0); x++)
         {
@@ -302,7 +303,7 @@ public class Algorithms : MonoBehaviour
         return map;
     }
 
-    public static int[,] DirectionalTunnel(int[,] map, int minPathWidth, int maxPathWidth, int maxPathChange, int roughness, int curvyness)
+    public static int[,] DirectionalTunnel(int[,] map, float seed, int minPathWidth, int maxPathWidth, int maxPathChange, int roughness, int curvyness)
     {
         //This value goes from its minus counterpart to its positive value, in this case with a width value of 1, the width of the tunnel is 3
         int tunnelWidth = 1; 
@@ -310,7 +311,7 @@ public class Algorithms : MonoBehaviour
         int x = map.GetUpperBound(0) / 2; 
 
         //Set up our random with the seed
-        System.Random rand = new System.Random(Time.time.GetHashCode()); 
+        System.Random rand = new System.Random(seed.GetHashCode()); 
 
         //Create the first part of the tunnel
         for (int i = -tunnelWidth; i <= tunnelWidth; i++) 
@@ -324,7 +325,7 @@ public class Algorithms : MonoBehaviour
             if (rand.Next(0, 100) > roughness) 
             {
                 //Get the amount we will change for the width
-                int widthChange = Random.Range(-maxPathWidth, maxPathWidth); 
+                int widthChange = rand.Next(-maxPathWidth, maxPathWidth); 
                 //Add it to our tunnel width value
                 tunnelWidth += widthChange;
                 //Check to see we arent making the path too small
@@ -343,7 +344,7 @@ public class Algorithms : MonoBehaviour
             if (rand.Next(0, 100) > curvyness) 
             {
                 //Get the amount we will change for the x position
-                int xChange = Random.Range(-maxPathChange, maxPathChange); 
+                int xChange = rand.Next(-maxPathChange, maxPathChange); 
                 //Add it to our x value
                 x += xChange;
                 //Check we arent too close to the left side of the map

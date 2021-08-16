@@ -1,58 +1,108 @@
-smarttile tile_montania {
-	tile tierra : default {
-		/*
-			opcion 1:
-				tileset = "nombre_tileset";
-				name = "nombre del subtile";
-			opcion 2:
-				name = "nombre tile";
-			opcion 3:
-				name = "";
-		*/
-		tileset = "Mountain/Tileset";
-		name = "ground_middle";
-	};
-	tile pasto {
-		tileset = "Mountain/Tileset"
-		name = "grass";
-		/*
-		-1 no tienen vecino
-		0 
-		1 tiene vecino
-		*/
+set size = {100, 100};
+
+smarttile montain{
+	tile tierra{
+		name = "Mountain/tierra_nieve";
+		tileset = "";
+		default = true;
 		rule = {
-			{0, -1, 0},
-			{0, self, 0},
+			{0, 0, 0},
+			{0, 0, 0},
 			{0, 0, 0}
 		}
-	};
-}
-
-section montania : RandomWalk {
-	smoothed = 0.27;
-	seed = 54135.3541;
-	tile = tile_montania;
-}
-
-section cueva : DirectionalTunnel {
-	seed = 3.14159265;
-}
-
-set size = {1000L, 100};
-
-begin
-	container sections[10];
-	for (int i = 0; i < 10; i++) {
-		if (i % 2) {
-			sections[i] = montania(100, 100);
-		}
-		else {
-			sections[i] = cueva(100, 100);
+	}
+	tile nieve{
+		name = "Mountain/nieve";
+		tileset = "";
+		default = false;
+		rule = {
+			{0, -1, 0},
+			{1, 0, 1},
+			{0, 0, 0}
 		}
 	}
-	for (int i = 0; i < 10; i++) {
-		if(i < 9){
-			sections[i] join sections[i + 1];
+	tile nieve_left{
+		name = "Mountain/nieve_left";
+		tileset = "";
+		default = false;
+		rule = {
+			{0, -1, 0},
+			{-1, 0, 1},
+			{0, 0, 0}
 		}
 	}
-end
+	tile nieve_right{
+		name = "Mountain/nieve_right";
+		tileset = "";
+		default = false;
+		rule = {
+			{0, -1, 0},
+			{1, 0, -1},
+			{0, 0, 0}
+		}
+	}
+}
+
+section cueva1 : RandomWalkCave{
+	seed = 76.6990956;
+	filler = "montain";
+	requiredFloorPercent = 45;
+}
+
+section cueva2 : RandomWalkCave{
+	seed = 3569.2360956;
+	filler = "montain";
+	requiredFloorPercent = 45;
+}
+
+section camino1 : RandomWalk{
+	seed = 66.368076712;
+	filler = "montain";
+}
+
+section camino2 : RandomWalk{
+	seed = 76.6990956;
+	filler = "montain";
+}
+
+section camino3 : RandomWalk{
+	seed = 7653.090956;
+	filler = "montain";
+}
+
+section camino4 : RandomWalk{
+	seed = 67.9756352241;
+	filler = "montain";
+}
+
+section completo : MooreCellularAutomata{
+	fillPercent = 100;
+	filler = "montain";
+}
+
+sasageyo {
+	container sections[12];
+	sections[1] = camino1;
+	sections[2] = completo;
+	sections[3] = camino2;
+	sections[4] = completo;
+	sections[5] = cueva1;
+	sections[6] = cueva2;
+	sections[7] = camino3;
+	sections[8] = completo;
+	sections[10] = camino4;
+	sections[11] = completo;
+
+	for(int i = 0; i < 2; i++){
+		if(i == 0){
+			join(3+i, 'd', 4+i);
+			join(7+i, 'd', 8+i);
+		}
+		join(i, 'd', i + 1);
+		join(9+i, 'd', i + 10);
+		int j = i + 1;
+		join(2*j, 'r', 2*j + 2);
+		join(3*j + 2, 'r', 3*j + 5);
+	}
+	join(5, 'l', 6);
+}
