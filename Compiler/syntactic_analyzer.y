@@ -2,43 +2,14 @@
 	#include <stdio.h>
 	#include <stdlib.h>
 	#include "symbol_table.h"
-	#define _BOOL_ 1
-	#define _INT_ 2
-	#define _LONG_ 3
-	#define _FLOAT_ 4
-	#define _DOUBLE_ 5
-	#define _CHAR_ 6
-	#define _STRING_ 7
-	#define _TILE_ 8
-	#define _SMARTTILE_ 9
-	#define _SECTION_ 10
-	#define _CONTAINER_ 11
-	#define PERLIN_NOISE 20
-	#define SMOOTHED_PERLIN_NOISE 21
-	#define RANDOM_WALK 22
-	#define SMOOTHED_RANDOM_WALK 23
-	#define PERLIN_NOISE_CAVE 24
-	#define RANDOM_WALK_CAVE 25
-	#define DIRECCIONAL_TUNNEL 26
-	#define CELLULAR_AUTOMATA 27 
-	#define MOORE_CELLULAR_AUTOMATA 28
-	#define VON_NEUMANN_CELLULAR_AUTOMATA 29
+	#include "definitions.h"
 
 	void yyerror(const char* message){
 		printf("%s\n", message);
 		exit(1);
 	}
 
-	int checkTypes(int type1, int type2) {
-		if(type1 == type2) return 0;
-		printf("estas seguro que sabes programar?!!!\n");
-		exit(1);
-	}
-	void assignUnary(symrec* $$, symrec* $1, int opc);
-  	void assignValue(symrec* a, symrec* b, symrec* c, int opc);
-	void put_attribute(Section* a, symrec* attribute, symrec* constant);
-	char* resize_string(char *code, int *new_len, int req_len);
-  %}
+ %}
 
 %define api.value.type union
 %token <symrec*> IDENTIFIER 
@@ -161,7 +132,7 @@ tiles_list
 	;
 
 tile
-	: TILE IDENTIFIER '{'tile_content rule'}'	{
+	: TILE IDENTIFIER '{' tile_content rule '}'	{
 			int isMultipleSprite = strlen($4 -> tileset);
 			if(getsym($2 -> name) != NULL) {
 				printf("60 anios, una protesis\n");
@@ -388,12 +359,9 @@ variable_declaration
 		}
 		checkTypes($1 -> type, $4 -> type);
 		$$ -> type = $1 -> type;
-		assignUnary($2, $4, '=');
 		$2 -> type = $1 -> type;
-		assignUnary($$, $2, '=');
 		putsym($2 -> name, $1 -> type);
 		symrec* aux = getsym($2 -> name);
-		assignUnary(aux, $4, '=');
 
 		char *code3 = pop(&pila_codigo);
 		char *code2 = pop(&pila_codigo);
@@ -413,8 +381,6 @@ variable_declaration
 			exit(1);
 		}
 		checkTypes($1 -> type, aux -> type);
-		assignUnary($2, aux, '=');
-		assignUnary($$, aux, '=');
 		$$ -> type = aux -> type;
 		putsym($2 -> name, aux -> type);
 		
@@ -439,7 +405,6 @@ variable_declaration
 		push(&pila_codigo, code);	
 							}
 	| CONTAINER SECTIONS '['CONST_INT']' 		{
-		/* printf("aqui\n"); */
 		if(getsym($2 -> name) != NULL) {
 			printf("Aun no declaras el tamanio de sections\n");
 			exit(1);
@@ -510,14 +475,12 @@ if
 expression
 	: constant                       		{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
-		$$ -> type = $1 -> type; 
-		assignUnary($$, $1, '=');			
+		$$ -> type = $1 -> type; 			
 							}
 	| expression '+' expression      		{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1 -> type, $3 -> type);
 		$$ -> type = $1 -> type;
-		assignValue($$, $1, $3, '+');
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + strlen(code2) + 4));
@@ -529,7 +492,6 @@ expression
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1-> type, $3 -> type);
 		$$ -> type = $1 -> type;
-		assignValue($$, $1, $3, '-');
 
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
@@ -541,7 +503,6 @@ expression
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1-> type, $3 -> type);
 		$$ -> type = $1 -> type;
-		assignValue($$, $1, $3, '*');
 
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
@@ -554,7 +515,6 @@ expression
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1-> type, $3 -> type);
 		$$ -> type = $1 -> type;
-		assignValue($$, $1, $3, '/');
 		
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
@@ -566,7 +526,6 @@ expression
 	| '-' expression %prec NEG       		{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
 		$$ -> type = $2 -> type;
-		assignUnary($$, $2, '-');
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + 4));
 		sprintf(code, "-%s", code1);
@@ -576,7 +535,6 @@ expression
 	| '(' expression ')'             		{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
 		$$ -> type = $2 -> type;
-		assignUnary($$, $2, '=');
 
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + 4));
@@ -591,8 +549,6 @@ expression
 			exit(1);
 		}
 		$$ -> type = aux -> type;
-		assignUnary(aux, aux, PLUSPLUS);
-		assignUnary($$, aux, '=');
 
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1)+5));
@@ -608,8 +564,6 @@ expression
 			exit(1);
 		}
 		$$ -> type = aux -> type;
-		assignUnary(aux, aux, MINUSMINUS);
-		assignUnary($$, aux, '=');
 
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1)+5));
@@ -625,7 +579,6 @@ expression
 			exit(1);
 		}
 		$$ -> type = aux -> type;
-		assignUnary($$, aux, '=');
 							}
 	| condition                      		{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
@@ -642,8 +595,6 @@ expression
 		}
 		checkTypes(aux -> type, $3 -> type);
 		$$ -> type = $3 -> type;
-		assignUnary(aux, $3, '=');
-		assignUnary($$, aux, '=');
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + strlen(code2) + 50));
@@ -670,12 +621,10 @@ expression
 							}
 
 	;
-// 1 <-
 condition
 	: condition logical_operator condition  	    	{ 
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1 -> type, $3 -> type);
-		assignValue($$, $1, $3, $2); 
 		char *code3 = pop(&pila_codigo);
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
@@ -688,7 +637,6 @@ condition
 		$$ = (symrec*)malloc(sizeof(symrec));
 		checkTypes($1 -> type, $3 -> type);
 		$$ -> type = _BOOL_;
-		assignValue($$, $1, $3, $2);
 		char *code3 = pop(&pila_codigo);
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
@@ -716,13 +664,10 @@ condition
         		exit(1);
           	}
 		$$ -> type = CONST_BOOL;
-		assignUnary($$, $2, '!');
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + 10));
 		sprintf(code, "!%s", code1);
 		push(&pila_codigo, code);
-
-		// printf("no condicion\n");
               }
 	| '!' variable 						{
 		symrec *aux = getsym($2 -> name);
@@ -815,13 +760,11 @@ constant
 		char code[25];
 		sprintf(code, "%fF", $$ -> value._double);
 		push(&pila_codigo, code);
-		//printf("const_double\n"); 
 		}
 	| CONST_CHAR    { 
 		$$ = (symrec*)malloc(sizeof(symrec));
 		$$ -> value._char = $1 -> value._char; 
-		$$ -> type = _CHAR_; 
-		// printf("const_char\n"); 
+		$$ -> type = _CHAR_;  
 		char code[10];
 		sprintf(code, "'%c'", $$ -> value._char);
 		push(&pila_codigo, code);
@@ -833,7 +776,6 @@ constant
 		char code[10];
 		sprintf(code, "%s", ($$ -> value._bool? "true" : "false"));
 		push(&pila_codigo, code);
-		// printf("const_bool\n"); 
 		}
 	| CONST_STRING {
 		$$ = (symrec*)malloc(sizeof(symrec));	
@@ -875,7 +817,6 @@ type
 		char code[7];
 		sprintf(code, "long");
 		push(&pila_codigo, code);
-		// printf("long\n"); 
 		}
 	| BOOL     { 
 		$$ = (symrec*)malloc(sizeof(symrec));
@@ -883,7 +824,6 @@ type
 		char code[7];
 		sprintf(code, "bool");
 		push(&pila_codigo, code);
-		// printf("bool\n"); 
 		}
 	| CHAR     { 
 		$$ = (symrec*)malloc(sizeof(symrec));
@@ -891,7 +831,6 @@ type
 		char code[7];
 		sprintf(code, "char");
 		push(&pila_codigo, code);
-		// printf("char\n"); 
 		}
 	| STRING   {
 		$$  = (symrec*) malloc(sizeof(symrec));
@@ -899,357 +838,14 @@ type
 		char code[7];
 		sprintf(code, "string");
 		push(&pila_codigo, code);
-		// printf("String\n");
 		}
 	;
 
 
 %%
-tabla_hash sym_table;
-Pila *pila_codigo;
-void init() {
-	int i = 0;
-	sym_table.MOD = 9887;
-	for(i = 0; i < sym_table.MOD; i++) {
-		sym_table.table[i] = NULL;
-	}
-	pila_codigo = NULL;
-}
-int get_hash(char const *name) {
-	int i = 0;
-	int ret = 0;
-	int pot = 1;
-	int prime = 31;
-	// printf("Name: %s\n", name);
-	for(i = 0; i < strlen(name); i++) {
-		ret += (name[i]*pot)%sym_table.MOD;
-		if(ret > sym_table.MOD)
-			ret -= sym_table.MOD;
-		pot = (pot * prime) % sym_table.MOD;
-	}
-	// printf("Valor hash: %d\n", ret);
-	return ret % sym_table.MOD;
-}
 
-void putsym(char const *name, int sym_type) {
-	int hash_val = get_hash(name);
-	// printf("Metiendo: %s, hash_val: %d\n", name, hash_val);
-	symrec *new_one = (symrec *) malloc (sizeof (symrec));
-	strcpy(new_one -> name, name);
-	new_one -> type = sym_type;
-	sym_table.table[hash_val] = new_one;
-}
-symrec *getsym(char const *name) {
-	int hash_val = get_hash(name);
-	// printf("Buscando: %s, hash_val: %d\n", name, hash_val);
-	return sym_table.table[hash_val];
-}
-char *pop(Pila **p) {
-	if((*p) == NULL) {
-		printf("Error, la pila esta vacia\n");
-		exit(1);
-	}
-	Pila* aux = (*p);
-	char *code = (char*)malloc(sizeof(char)*(strlen((*p) -> code) + 4));
-	strcpy(code, (*p) -> code);
-	(*p) = (*p) -> next;
-	free(aux);
-	// printf("Sacando: %s\n\n", code);
-	return code;
-}
-void push(Pila **p, char* code) {
-	// printf("Mete: %s\n", code);
-	Pila *aux = (Pila*)malloc(sizeof(Pila));
-	aux -> next = (*p);
-	aux -> code = (char*)malloc(sizeof(char)*(strlen(code) + 4));
-	strcpy(aux -> code, code);
-	(*p) = aux;
-}
 int main(int argc, char** argv) {
 	init();
 	yyparse();
 	return 0;
 }
-
-void assignUnary(symrec* $$, symrec* $1, int opc) {
- 	// printf("$1 -> type = %d\n", $1 -> type);
-    switch($1 -> type) {
-      case _INT_:
-        switch(opc) {
-          case '-': $$ -> value._int = -$1 -> value._int; break;
-          case '=': $$ -> value._int = $1 -> value._int; break;
-          case PLUSPLUS: $$ -> value._int = $1 -> value._int + 1; break;
-          case MINUSMINUS: $$ -> value._int = $1 -> value._int - 1; break;
-        }
-        break;
-      case _FLOAT_:
-        switch(opc) {
-          case '-': $$ -> value._float = -$1 -> value._float; break;
-          case '=': $$ -> value._float = $1 -> value._float; break;
-          case PLUSPLUS: $$ -> value._float = $1 -> value._float + 1; break;
-          case MINUSMINUS: $$ -> value._float = $1 -> value._float - 1; break;
-        }
-        break;
-      case _DOUBLE_:
-        switch(opc) {
-          case '-': $$ -> value._double = -$1 -> value._double; break;
-          case '=': $$ -> value._double = $1 -> value._double; break;
-          case PLUSPLUS: $$ -> value._double = $1 -> value._double + 1; break;
-          case MINUSMINUS: $$ -> value._double = $1 -> value._double - 1; break;
-        }
-        break;
-      case _CHAR_:
-        switch(opc) {
-          case '=': $$ -> value._char = $1 -> value._char; break;
-        }
-        break;
-      case _BOOL_:
-        if(opc == '!') {
-          $$ -> value._bool = !($1 -> value._bool); break;
-        }
-        else if(opc == '='){
-          $$ -> value._bool = $1-> value._bool;
-        }
-        break;
-      case _LONG_:
-        switch(opc) {
-          case '-': $$ -> value._long = -$1 -> value._long; break;
-          case '=': $$ -> value._long = -$1 -> value._long; break;
-          case PLUSPLUS: $$ -> value._long = $1 -> value._long + 1; break;
-          case MINUSMINUS: $$ -> value._long = $1 -> value._long - 1; break;
-        } 
-        break;
-	case _STRING_:
-		if(opc == '=') {
-			int len = strlen($1 -> value._string);
-			$$ -> value._string = (char*)malloc(len*sizeof(char));
-			strcpy($$ -> value._string, $1 -> value._string);
-		}
-		else {
-			printf("Que haces, eso no se puede\n");
-		}
-	break;
-	case _SECTION_:
-		if(opc == '=') {
-			// $$ -> value._int -> al que quieres accesar
-			/*
-			if($$ == NULL) {
-				printf("weino\n");
-				exit(1);
-			}
-			printf("NOMBRE %s: ", name);
-			$$ -> value.array[$$ -> value._int] = (char*)malloc(sizeof(char)*strlen($1 -> name));
-			strcpy($$ -> value.array[$$ -> value._int], $1 -> name);
-			*/
-		}
-		else {
-			printf("RTFM\n");
-			exit(1);
-		}
-		break;
-      default:
-      	printf("Error unario\n");
-        printf("Hay un error!\n");
-        exit(1);
-    }
-  }
-  // Para operaciones binarias
-void assignValue(symrec* a, symrec* b, symrec* c, int opc) {
-	// printf("OPC: %d\n", opc);
-	switch(b -> type) {
-		case _INT_:
-			// printf("B: %d\n", b -> value._int);
-			// printf("C: %d\n", c -> value._int);
-			switch(opc) {
-				case '+': a -> value._int = b -> value._int + c -> value._int; break;			
-				case '-': a -> value._int = b -> value._int - c -> value._int; break;			
-				case '*': a -> value._int = b -> value._int * c -> value._int; break;			
-				case '/': a -> value._int = b -> value._int / c -> value._int; break;			
-				case LESS: a -> value._bool = b -> value._int < c -> value._int; break;			
-				case GREATER: a -> value._bool = b -> value._int > c -> value._int; break;
-				case GREATER_EQ: a -> value._bool = b -> value._int >= c -> value._int; break;
-				case LESS_EQ: a -> value._bool = b -> value._int <= c -> value._int; break;
-				case NEQ: a-> value._bool = b -> value._int != c -> value._int; break;
-				case EQ: a-> value._bool = b -> value._int == c -> value._int; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		case _FLOAT_:
-			switch(opc) {
-				case '+': a -> value._float = b -> value._float + c -> value._float; break;
-				case '-': a -> value._float = b -> value._float - c -> value._float; break;
-				case '*': a -> value._float = b -> value._float * c -> value._float; break;
-				case '/': a -> value._float = b -> value._float / c -> value._float; break;
-				case LESS: a -> value._bool = b -> value._float < c -> value._float; break;
-				case GREATER: a -> value._bool = b -> value._float > c -> value._float; break;
-				case GREATER_EQ: a -> value._bool = b -> value._float >= c -> value._float; break;
-				case LESS_EQ: a -> value._bool = b -> value._float <= c -> value._float; break;
-				case NEQ: a-> value._bool = b -> value._float != c -> value._float; break;
-				case EQ: a-> value._bool = b -> value._float == c -> value._float; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		case _DOUBLE_:
-			// printf("%f / %f\n", b -> value._double, c -> value._double);
-			switch(opc) {
-				case '+': a -> value._double = b -> value._double + c -> value._double; break;
-				case '-': a -> value._double = b -> value._double - c -> value._double; break;
-				case '*': a -> value._double = b -> value._double * c -> value._double; break;
-				case '/': a -> value._double = b -> value._double / c -> value._double;break;
-				case LESS: a-> value._bool = b -> value._double < c -> value._double;break;
-				case GREATER: a-> value._bool = b -> value._double > c -> value._double;break;
-				case GREATER_EQ: a -> value._bool = b -> value._double >= c -> value._double;break;
-				case LESS_EQ: a-> value._bool = b -> value._double <= c -> value._double;break;
-				case NEQ: a-> value._bool = b -> value._double != c -> value._double; break;
-				case EQ: a-> value._bool = b -> value._double == c -> value._double; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		case _CHAR_:
-			switch(opc) {
-				case '+': a -> value._char = b -> value._char + c -> value._char; break;
-				case '-': a -> value._char = b -> value._char - c -> value._char; break;
-				case '*': a -> value._char = b -> value._char * c -> value._char; break;
-				case '/': a -> value._char = b -> value._char / c -> value._char; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		case _BOOL_:
-			switch(opc) {
-				case '+': a -> value._bool = b -> value._bool | c -> value._bool; break;
-				case '*': a -> value._bool = b -> value._bool & c -> value._bool; break;
-				case OR_OP: a -> value._bool = b -> value._bool | c -> value._bool; break;
-				case AND_OP: a -> value._bool = b -> value._bool & c -> value._bool; break;	
-  				case NEQ: a-> value._bool = b -> value._bool != c -> value._bool; break;
-  				case EQ: a-> value._bool = b -> value._bool != c -> value._bool; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		case _LONG_:
-			switch(opc) {
-				case '+': a -> value._long = b -> value._long + c -> value._long; break;	
-				case '-': a -> value._long = b -> value._long - c -> value._long; break;	
-				case '*': a -> value._long = b -> value._long * c -> value._long; break;	
-				case '/': a -> value._long = b -> value._long / c -> value._long; break;	
-				case LESS: a-> value._bool = b -> value._long < c -> value._long; break;
-				case GREATER: a-> value._bool = b -> value._long > c -> value._long; break;
-				case GREATER_EQ: a -> value._bool = b -> value._long >= c -> value._long;break;
-				case LESS_EQ: a-> value._bool = b -> value._long <= c -> value._long; break;
-				case NEQ: a-> value._bool = b -> value._long != c -> value._long; break;
-				case EQ: a-> value._bool = b -> value._long == c -> value._long; break;
-				default:
-					printf("Te faltan manos men\n");
-					exit(1);
-			}
-			break;
-		default:
-			printf("Hay un error!\n");
-			exit(1);
-	}
-}
-
-void put_attribute(Section* a, symrec* attribute, symrec* constant) {
-	if(strcmp(attribute -> name, "interval") == 0){
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[0] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "minSectionWidth") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[1] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "requiredFloorPercent") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[2] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "minPathWidth") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[3] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "roughness") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[4] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "curvyness") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[5] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "height") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[6] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "fillPercent") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[7] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "smoothCount") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[8] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "x") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[9] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "y") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[10] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "edgeAreWalls") == 0) {
-		checkTypes(_BOOL_, constant -> type);
-		a -> _ints[11] = constant -> value._bool;
-	}
-	else if(strcmp(attribute -> name, "maxPathWidth") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[12] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "maxPathChange") == 0) {
-		checkTypes(_INT_, constant -> type);
-		a -> _ints[13] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "seed") == 0) {
-		checkTypes(_DOUBLE_, constant -> type);
-		a -> _floats[0] = constant -> value._double;
-	}
-	else if(strcmp(attribute -> name, "modifier") == 0) {
-		checkTypes(_DOUBLE_, constant -> type);
-		a -> _floats[1] = constant -> value._int;
-	}
-	else if(strcmp(attribute -> name, "filler") == 0) {
-		checkTypes(_STRING_, constant -> type);
-		symrec *aux = getsym(constant -> value._string);
-		if(aux == NULL) {
-			printf("seguro?\n");
-			exit(1);
-		}
-		a -> filler = aux -> value.smart_tile;
-	}
-	else {
-		printf("It's called anime and is art\n");
-		exit(1);
-	}
-}
-char* resize_string(char *code, int *new_len, int req_len) {
-	while((*new_len) <= req_len) {
-		(*new_len)*=2;
-		code = (char*)realloc((void*)code, *new_len);
-		if(code == NULL) {
-			printf("Error\n");
-			exit(1);
-		}
-	}
-	return code;
-}
-void print_template() {
-	printf("using System.Collections.Generic;using UnityEngine;using UnityEditor;using UnityEngine.Tilemaps;public class MapGenerator : MonoBehaviour {  private Dictionary<string, Template> templates {    get;    set;  } private List<Section> sections {    get;    set;  }[Header(\"Reference here your Tilemap\")]public Tilemap tilemap;  public int width {    get;    set;  } public int height {    get;    set;  }  bool[] visited;  public void ClearMap() {    tilemap.ClearAllTiles();  } public void Generate() {     visited = new bool[sections.Count];    List<ConectedComponent> components = new List<ConectedComponent>();    for (int i = 0; i < sections.Count; i++) {      visited[i] = false;    }    for (int i = 0; i < sections.Count; i++) {      if(!visited[i]) {        sections[i].x = 0;        sections[i].y = 0;        ConectedComponent current = new ConectedComponent {origin = new int[2] {0, 0},corner = new int[2] {width - 1, height - 1},elements = new List<int>()};        Dfs(i, current);        components.Add(current);      }    }    int[] origin = new int[] {0, 0};    for (int i = 0; i < components.Count; i++) {      MoveCoords(components[i], origin);      origin[0] = components[i].corner[0];    }    int mapWidth = origin[0] + width;    int mapHeight = origin[1] + height;    for (int k = 0; k < sections.Count; k++) {  if(sections[k] == null) { continue; }    TileBase tile = Resources.Load<TileBase>(RuleTileGenerator.RULE_TILES_PATH + sections[k].filler) as TileBase;      if(tile == null) {        Debug.Log(\"Resource tile load failed\");      }      for (int i = 0; i < width; i++) {        for (int j = 0; j < height; j++) {          int x = sections[k].x + i;          int y = sections[k].y + j;          if(sections[k].map[i, j] == 1) {            tilemap.SetTile(new Vector3Int(x, y, 0), tile);          }        }      }    }  } private void MoveCoords(ConectedComponent component, int[] origin) {    int Cx = component.origin[0] - origin[0];    int Cy = component.origin[1] - origin[1];    for (int i = 0; i < component.elements.Count; i++) {      int idx = component.elements[i];      sections[idx].x = sections[idx].x - Cx;      sections[idx].y = sections[idx].y - Cy;    }    component.origin[0] = component.origin[0] - Cx;    component.origin[1] = component.origin[1] - Cy;    component.corner[0] = component.corner[0] - Cx;    component.corner[1] = component.corner[1] - Cy;  }"); 
-	printf("private void Join(ConectedComponent component, Section origin, Section destiny, int direction) {    if (direction == 0) {      destiny.x = origin.x - width;      destiny.y = origin.y;    }    else if (direction == 1) {      destiny.x = origin.x;      destiny.y = origin.y + height;    }    else if (direction == 2) {      destiny.x = origin.x + width;      destiny.y = origin.y;    }    else {      destiny.x = origin.x;      destiny.y = origin.y - height;    }    component.origin[0] = Min(origin.x, destiny.x);    component.origin[1] = Min(origin.y, destiny.y);    component.corner[0] = Max(origin.x, destiny.x) + width;    component.corner[1] = Max(origin.y, destiny.y) + height;  } private void Dfs(int node, ConectedComponent current) {    visited[node] = true;    current.elements.Add(node);    for (int i = 0; i < 4; i++) {      int nextNode = sections[node].neighbors[i];      if (nextNode == -1) {        continue;      }      if (!visited[nextNode]) {        Join(current, sections[node], sections[nextNode], i);        Dfs(nextNode, current);      }    }  } private int Min(int a, int b) {    if(a < b) return a;    return b;  } private int Max(int a, int b) {    if(a > b) return a;    return b;  }"); 
-}
-

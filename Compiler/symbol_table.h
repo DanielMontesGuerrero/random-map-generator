@@ -1,9 +1,11 @@
 #ifndef __SYMBOL_TABLE__
 #define __SYMBOL_TABLE__
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h> 
 #include <math.h>
+#include "definitions.h"
 
 #define MAXN 9887
 
@@ -13,22 +15,24 @@ typedef struct tile {
 	char *tileset;
 	int rule[3][3];
 	int flag;
-}Tile;
+} Tile;
 
 typedef struct tilelist {
 	Tile *data;	
 	struct tilelist *next;
-}TileList;
+} TileList;
 
 typedef struct smarttile {
 	int count;
 	TileList *tiles;
-}Smarttile;
+} Smarttile;
 
 typedef struct section {
 	char *algorithm;
-	float _floats[2]; /* seed -> _floats[0], modifier[1] */
-	/* interval -> ints[0], 
+	float _floats[2];
+	/*
+	 * seed -> _floats[0], modifier[1]
+	 * interval -> ints[0], 
 	 * minSectionWidth -> ints[1], 
 	 * required_floor -> ints[2], 
 	 * minpathwidth -> ints[3], 
@@ -44,7 +48,7 @@ typedef struct section {
 	 * */
 	int _ints[13]; 
 	Smarttile *filler;
-}Section;
+} Section;
 
 typedef struct symrec {
 	char name[256]; 
@@ -63,25 +67,28 @@ typedef struct symrec {
 		Smarttile *smart_tile;
 		char **array;
 	} value;
-}symrec;
+} symrec;
 
 typedef struct tabla_hash {
 	symrec *table[MAXN];
 	int MOD;
-}tabla_hash;
+} tabla_hash;
 
 typedef struct pila{
 	char *code;
 	struct pila *next;
-}Pila;
+} Pila;
 
 extern tabla_hash sym_table;
 extern Pila *pila_codigo;
+
 void push(Pila** p, char* code);
 char* pop(Pila** p);
-
 void putsym (char const *name, int sym_type);
 symrec* getsym (char const *name);
-
+void init();
+int checkTypes(int type1, int type2);
+void put_attribute(Section* section, symrec* attribute, symrec* constant);
 void print_template();
+
 #endif
