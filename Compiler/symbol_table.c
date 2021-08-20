@@ -1,4 +1,4 @@
-#include"symbol_table.h"
+#include "symbol_table.h"
 
 tabla_hash sym_table;
 Pila *pila_codigo;
