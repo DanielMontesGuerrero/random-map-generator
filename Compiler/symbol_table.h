@@ -6,6 +6,7 @@
 #include <string.h> 
 #include <math.h>
 #include "definitions.h"
+#include "templates.h"
 
 #define MAXN 9887
 

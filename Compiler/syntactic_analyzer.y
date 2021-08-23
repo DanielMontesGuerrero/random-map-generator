@@ -3,6 +3,7 @@
 	#include <stdlib.h>
 	#include "symbol_table.h"
 	#include "definitions.h"
+	#include "templates.h"
 
 	void yyerror(const char* message){
 		printf("%s\n", message);
@@ -50,14 +51,14 @@ input
 		char *code = (char*)malloc(sizeof(char)*(strlen(code3) + strlen(code2) + strlen(code1) + 500));
 		print_template();
 		printf("%s", code1);
-		printf("public void CreateRulesAndTemplates(){%s}", code2);
+		printf(CREATE_RULES_AND_TEMPLATES_FUN, code2);
 		printf("%s}", code3);
 	}
 	;
 set_size
 	: SET '=' '{' CONST_INT ',' CONST_INT '}' ';' {
 		char code[500];
-		sprintf(code, "public void GenerateAll(){ClearMap();width = %d;height = %d;sections = new List<Section>();	templates = new Dictionary<string, Template>();	CreateRulesAndTemplates();CreateMap();Generate();}", $4 -> value._int, $6 -> value._int);
+		sprintf(code, GENERATE_ALL_FUN, $4 -> value._int, $6 -> value._int);
 		push(&pila_codigo, code);
 	}
 	;
@@ -97,7 +98,7 @@ smarttile
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + 100 + 3*strlen($2 -> name)));
 		sprintf(
 			code, 
-			"List<Rule> %s = new List<Rule>(){%s};\nRuleTileGenerator.CreateRuleTile(\"%s\",%s);", 
+			RULET_TILE_DECLARATION, 
 			$2 -> name, 
 			code1, 
 			$2 -> name,
@@ -155,7 +156,7 @@ tile
 		if($5 != NULL) {
 			sprintf(
 				code,
-				"new Rule{%s matrixOfNeighbors=new int[,] %s}",
+				RULE_DECLARATION_V1,
 				code1,
 				code2
 				);
@@ -163,7 +164,7 @@ tile
 		else {
 			sprintf(
 				code,
-				"new Rule{%s matrixOfNeighbors=new int[,] {}",
+				RULE_DECLARATION_v2,
 				code1
 				);
 		}
@@ -186,7 +187,7 @@ section
 
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1)+strlen($4)+strlen($2 -> name)+100));
-		sprintf(code, "templates[\"%s\"] = new Template {%s algorithm = \"%s\"};", $2 -> name,code1, $4);
+		sprintf(code, TEMPLATE_DECLARATION, $2 -> name,code1, $4);
 		push(&pila_codigo, code);
 	}
 	;
@@ -220,7 +221,7 @@ tile_content
 
 		char *code = (char*)malloc(sizeof(char)*(strlen($$ -> name) + strlen($$ -> tileset) + 1000));
 		sprintf(code,
-			"spritePath=\"%s\", spriteMultiplePath=\"%s\",isDefault=%s,isMultipleSprite=%s,",
+				TILE_CONTENT_DECLARATION,
 				$$ -> name,
 				$$ -> tileset,
 				($$ -> flag? "true" : "false"),
@@ -234,7 +235,7 @@ main_function
 	: MAIN  code_block {
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + 100));
-		sprintf(code, "public void CreateMap(){%s}",code1);
+		sprintf(code, CREATE_MAP_FUN,code1);
 		push(&pila_codigo, code);
 	}
 	;
@@ -333,7 +334,7 @@ join
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + strlen(code2) + 100));
 		sprintf(code, 
-			"sections[%s].neighbors[%d]=sections[%s].id;sections[%s].neighbors[%d]=sections[%s].id;",
+			JOIN_SECTIONS_DECLARATION,
 			code1,
 			direccion,
 			code2,
@@ -412,7 +413,7 @@ variable_declaration
 		char *code = (char*)malloc(sizeof(char)*(500));
 		sprintf(
 			code,
-			"sections = new List<Section> (); for(int iterador = 0; iterador < %d; iterador++) { sections.Add(new Section {width = width, height = height, id = iterador, neighbors = new int[4]{-1,-1,-1,-1}, map = new int[width, height] });}",
+			SECTION_CONTAINER_DECLARATION,
 			$4 -> value._int
 		);
 		push(&pila_codigo, code);	
@@ -603,7 +604,7 @@ expression
 		char *code2 = pop(&pila_codigo);
 		char *code1 = pop(&pila_codigo);
 		char *code = (char*)malloc(sizeof(char)*(strlen(code1) + strlen(code2) + 50));
-		sprintf(code, "sections[%s].Init(templates[\"%s\"])", code1, code2);
+		sprintf(code, SECTION_INIT_DECLARATION, code1, code2);
 		push(&pila_codigo, code);
 	}
 	;
