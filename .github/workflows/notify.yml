@@ -11,10 +11,5 @@ jobs:
       - name: Notify
         uses: fjogeleit/http-request-action@master
         with:
-          url: ${{ format('{0}?channel_id={1}&user={2}&repo={3}&pr={4}', \
-            secrets.NOTIFY_URL, \
-            secrets.CHANNEL_ID, \
-            'DanielMontesGuerrero', \
-            'random-map-generator', \
-            github.event.number) }}
+          url: ${{ format('{0}?channel_id={1}&user={2}&repo={3}&pr={4}', secrets.NOTIFY_URL, secrets.CHANNEL_ID, 'DanielMontesGuerrero', 'random-map-generator', github.event.number) }}
           method: 'GET'
